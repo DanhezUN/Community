@@ -1,169 +1,232 @@
+-- MySQL Workbench Forward Engineering
 
-CREATE TABLE apartamentos
-(
-  id             INT        NOT NULL AUTO_INCREMENT,
-  numero         VARCHAR(4) NOT NULL,
-  id_torre       INT        NOT NULL,
-  id_propietario INT        NULL    ,
-  PRIMARY KEY (id)
-);
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
-ALTER TABLE apartamentos
-  ADD CONSTRAINT UQ_id UNIQUE (id);
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema community
+-- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `community` ;
 
-CREATE TABLE areas_comunes
-(
-  id     INT          NOT NULL AUTO_INCREMENT,
-  nombre VARCHAR(255) NOT NULL,
-  PRIMARY KEY (id)
-);
+-- -----------------------------------------------------
+-- Schema community
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `community` DEFAULT CHARACTER SET latin1 COLLATE latin1_spanish_ci ;
+USE `community` ;
 
-ALTER TABLE areas_comunes
-  ADD CONSTRAINT UQ_id UNIQUE (id);
+-- -----------------------------------------------------
+-- Table `community`.`torres`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`torres` ;
 
-ALTER TABLE areas_comunes
-  ADD CONSTRAINT UQ_nombre UNIQUE (nombre);
+CREATE TABLE IF NOT EXISTS `community`.`torres` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `numero` VARCHAR(4) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
+  UNIQUE INDEX `UQ_numero` (`numero` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci;
 
-CREATE TABLE mascotas
-(
-  id     INT         NOT NULL AUTO_INCREMENT,
-  nombre VARCHAR(45) NOT NULL,
-  tipo   VARCHAR(45) NOT NULL,
-  id     INT         NOT NULL,
-  PRIMARY KEY (id)
-);
 
-ALTER TABLE mascotas
-  ADD CONSTRAINT UQ_id UNIQUE (id);
+-- -----------------------------------------------------
+-- Table `community`.`usuarios`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`usuarios` ;
 
-CREATE TABLE pagos
-(
-  id    INT           NOT NULL AUTO_INCREMENT,
-  valor DECIMAL(10,2) NOT NULL,
-  PRIMARY KEY (id)
-);
+CREATE TABLE IF NOT EXISTS `community`.`usuarios` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(100) NOT NULL,
+  `telefono` VARCHAR(15) NOT NULL,
+  `email` VARCHAR(60) NOT NULL,
+  `password` VARCHAR(256) NOT NULL,
+  `username` VARCHAR(45) NOT NULL,
+  `tipo` ENUM('residente', 'vigilante', 'admin', 'otro') NOT NULL DEFAULT 'otro',
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci
+COMMENT = 'Usuarios Conjunto';
 
-ALTER TABLE pagos
-  ADD CONSTRAINT UQ_id UNIQUE (id);
 
-CREATE TABLE pqr
-(
-  id         INT                           NOT NULL AUTO_INCREMENT,
-  asunto     VARCHAR(64)                   NOT NULL,
-  texto      TEXT                          NULL    ,
-  fecha      DATETIME                      NOT NULL,
-  estado     ENUM('pendiente', 'resuelto') NOT NULL DEFAULT 'pendiente',
-  id_usuario INT                           NOT NULL,
-  PRIMARY KEY (id)
-) COMMENT 'Peticiones, Quejas y Reclamos';
+-- -----------------------------------------------------
+-- Table `community`.`apartamentos`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`apartamentos` ;
 
-ALTER TABLE pqr
-  ADD CONSTRAINT UQ_id UNIQUE (id);
+CREATE TABLE IF NOT EXISTS `community`.`apartamentos` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `numero` VARCHAR(4) NOT NULL,
+  `id_torre` INT NOT NULL,
+  `id_propietario` INT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
+  INDEX `FK_torres_TO_apartamentos` (`id_torre` ASC) VISIBLE,
+  INDEX `FK_usuarios_TO_apartamentos` (`id_propietario` ASC) VISIBLE,
+  CONSTRAINT `FK_torres_TO_apartamentos`
+    FOREIGN KEY (`id_torre`)
+    REFERENCES `community`.`torres` (`id`),
+  CONSTRAINT `FK_usuarios_TO_apartamentos`
+    FOREIGN KEY (`id_propietario`)
+    REFERENCES `community`.`usuarios` (`id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci;
 
-CREATE TABLE reservas
-(
-  id         INT      NOT NULL AUTO_INCREMENT,
-  finicio    DATETIME NOT NULL,
-  ffinal     DATETIME NOT NULL,
-  id_area    INT      NOT NULL,
-  id_usuario INT      NOT NULL,
-  PRIMARY KEY (id)
-);
 
-ALTER TABLE reservas
-  ADD CONSTRAINT UQ_id UNIQUE (id);
+-- -----------------------------------------------------
+-- Table `community`.`areas_comunes`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`areas_comunes` ;
 
-CREATE TABLE residentes
-(
-  id_usuario     INT NOT NULL,
-  id_apartamento INT NOT NULL,
-  PRIMARY KEY (id_usuario, id_apartamento)
-);
+CREATE TABLE IF NOT EXISTS `community`.`areas_comunes` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
+  UNIQUE INDEX `UQ_nombre` (`nombre` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci;
 
-CREATE TABLE torres
-(
-  id     INT        NOT NULL AUTO_INCREMENT,
-  numero VARCHAR(4) NOT NULL,
-  PRIMARY KEY (id)
-);
 
-ALTER TABLE torres
-  ADD CONSTRAINT UQ_id UNIQUE (id);
+-- -----------------------------------------------------
+-- Table `community`.`mascotas`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`mascotas` ;
 
-ALTER TABLE torres
-  ADD CONSTRAINT UQ_numero UNIQUE (numero);
+CREATE TABLE IF NOT EXISTS `community`.`mascotas` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(45) NOT NULL,
+  `tipo` VARCHAR(45) NOT NULL,
+  `id_apartamento` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
+  INDEX `FK_apartamentos_TO_mascotas` (`id_apartamento` ASC) VISIBLE,
+  CONSTRAINT `FK_apartamentos_TO_mascotas`
+    FOREIGN KEY (`id_apartamento`)
+    REFERENCES `community`.`apartamentos` (`id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci;
 
-CREATE TABLE usuarios
-(
-  id       INT                                             NOT NULL AUTO_INCREMENT,
-  nombre   VARCHAR(100)                                    NOT NULL,
-  telefono VARCHAR(15)                                     NOT NULL,
-  email    VARCHAR(60)                                     NOT NULL,
-  password VARCHAR(256)                                    NOT NULL,
-  username VARCHAR(45)                                     NOT NULL,
-  tipo     ENUM('residente', 'vigilante', 'admin', 'otro') NOT NULL DEFAULT 'otro',
-  PRIMARY KEY (id)
-) COMMENT 'Usuarios Conjunto';
 
-ALTER TABLE usuarios
-  ADD CONSTRAINT UQ_id UNIQUE (id);
+-- -----------------------------------------------------
+-- Table `community`.`pagos`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`pagos` ;
 
-CREATE TABLE visitantes
-(
-  id             INT         NOT NULL AUTO_INCREMENT,
-  nombre         VARCHAR(45) NOT NULL,
-  fentrada       DATETIME    NOT NULL,
-  fsalida        DATETIME    NULL    ,
-  telefono       VARCHAR(10) NOT NULL,
-  documento      VARCHAR(11) NOT NULL,
-  id_apartamento INT         NOT NULL,
-  PRIMARY KEY (id)
-);
+CREATE TABLE IF NOT EXISTS `community`.`pagos` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `valor` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci;
 
-ALTER TABLE visitantes
-  ADD CONSTRAINT UQ_id UNIQUE (id);
 
-ALTER TABLE apartamentos
-  ADD CONSTRAINT FK_torres_TO_apartamentos
-    FOREIGN KEY (id_torre)
-    REFERENCES torres (id);
+-- -----------------------------------------------------
+-- Table `community`.`pqr`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`pqr` ;
 
-ALTER TABLE residentes
-  ADD CONSTRAINT FK_usuarios_TO_residentes
-    FOREIGN KEY (id_usuario)
-    REFERENCES usuarios (id);
+CREATE TABLE IF NOT EXISTS `community`.`pqr` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `asunto` VARCHAR(64) NOT NULL,
+  `texto` TEXT NULL DEFAULT NULL,
+  `fecha` DATETIME NOT NULL,
+  `estado` ENUM('pendiente', 'resuelto') NOT NULL DEFAULT 'pendiente',
+  `id_usuario` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
+  INDEX `FK_usuarios_TO_pqr` (`id_usuario` ASC) VISIBLE,
+  CONSTRAINT `FK_usuarios_TO_pqr`
+    FOREIGN KEY (`id_usuario`)
+    REFERENCES `community`.`usuarios` (`id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci
+COMMENT = 'Peticiones, Quejas y Reclamos';
 
-ALTER TABLE residentes
-  ADD CONSTRAINT FK_apartamentos_TO_residentes
-    FOREIGN KEY (id_apartamento)
-    REFERENCES apartamentos (id);
 
-ALTER TABLE visitantes
-  ADD CONSTRAINT FK_apartamentos_TO_visitantes
-    FOREIGN KEY (id_apartamento)
-    REFERENCES apartamentos (id);
+-- -----------------------------------------------------
+-- Table `community`.`reservas`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`reservas` ;
 
-ALTER TABLE mascotas
-  ADD CONSTRAINT FK_apartamentos_TO_mascotas
-    FOREIGN KEY (id)
-    REFERENCES apartamentos (id);
+CREATE TABLE IF NOT EXISTS `community`.`reservas` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `finicio` DATETIME NOT NULL,
+  `ffinal` DATETIME NOT NULL,
+  `id_area` INT NOT NULL,
+  `id_usuario` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
+  INDEX `FK_areas_comunes_TO_reservas` (`id_area` ASC) VISIBLE,
+  INDEX `FK_usuarios_TO_reservas` (`id_usuario` ASC) VISIBLE,
+  CONSTRAINT `FK_areas_comunes_TO_reservas`
+    FOREIGN KEY (`id_area`)
+    REFERENCES `community`.`areas_comunes` (`id`),
+  CONSTRAINT `FK_usuarios_TO_reservas`
+    FOREIGN KEY (`id_usuario`)
+    REFERENCES `community`.`usuarios` (`id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci;
 
-ALTER TABLE apartamentos
-  ADD CONSTRAINT FK_usuarios_TO_apartamentos
-    FOREIGN KEY (id_propietario)
-    REFERENCES usuarios (id);
 
-ALTER TABLE pqr
-  ADD CONSTRAINT FK_usuarios_TO_pqr
-    FOREIGN KEY (id_usuario)
-    REFERENCES usuarios (id);
+-- -----------------------------------------------------
+-- Table `community`.`residentes`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`residentes` ;
 
-ALTER TABLE reservas
-  ADD CONSTRAINT FK_areas_comunes_TO_reservas
-    FOREIGN KEY (id_area)
-    REFERENCES areas_comunes (id);
+CREATE TABLE IF NOT EXISTS `community`.`residentes` (
+  `id_usuario` INT NOT NULL,
+  `id_apartamento` INT NOT NULL,
+  PRIMARY KEY (`id_usuario`, `id_apartamento`),
+  INDEX `FK_apartamentos_TO_residentes` (`id_apartamento` ASC) VISIBLE,
+  CONSTRAINT `FK_apartamentos_TO_residentes`
+    FOREIGN KEY (`id_apartamento`)
+    REFERENCES `community`.`apartamentos` (`id`),
+  CONSTRAINT `FK_usuarios_TO_residentes`
+    FOREIGN KEY (`id_usuario`)
+    REFERENCES `community`.`usuarios` (`id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci;
 
-ALTER TABLE reservas
-  ADD CONSTRAINT FK_usuarios_TO_reservas
-    FOREIGN KEY (id_usuario)
-    REFERENCES usuarios (id);
+
+-- -----------------------------------------------------
+-- Table `community`.`visitantes`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`visitantes` ;
+
+CREATE TABLE IF NOT EXISTS `community`.`visitantes` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(45) NOT NULL,
+  `fentrada` DATETIME NOT NULL,
+  `fsalida` DATETIME NULL DEFAULT NULL,
+  `telefono` VARCHAR(10) NOT NULL,
+  `documento` VARCHAR(11) NOT NULL,
+  `id_apartamento` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
+  INDEX `FK_apartamentos_TO_visitantes` (`id_apartamento` ASC) VISIBLE,
+  CONSTRAINT `FK_apartamentos_TO_visitantes`
+    FOREIGN KEY (`id_apartamento`)
+    REFERENCES `community`.`apartamentos` (`id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
