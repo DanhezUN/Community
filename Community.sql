@@ -238,3 +238,17 @@ SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
+DROP TRIGGER IF EXISTS `community`.`reservas_AFTER_INSERT`;
+
+DELIMITER $$
+USE `community`$$
+CREATE DEFINER = CURRENT_USER TRIGGER `community`.`reservas_AFTER_INSERT` AFTER INSERT ON `reservas` FOR EACH ROW
+BEGIN
+    if (SELECT estado FROM  `community`.`areas_comunes` where (id = new.id_area)) = FALSE then
+		UPDATE areas_comunes set estado=TRUE where id = new.id_area;
+	else
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Area Ya en reserva Activa';
+	end if;
+END$$
+DELIMITER ;
+
