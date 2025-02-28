@@ -88,6 +88,7 @@ DROP TABLE IF EXISTS `community`.`areas_comunes` ;
 CREATE TABLE IF NOT EXISTS `community`.`areas_comunes` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `nombre` VARCHAR(255) NOT NULL,
+  `estado` BOOL NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
   UNIQUE INDEX `UQ_nombre` (`nombre` ASC) VISIBLE)
@@ -125,8 +126,14 @@ DROP TABLE IF EXISTS `community`.`pagos` ;
 CREATE TABLE IF NOT EXISTS `community`.`pagos` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `valor` DECIMAL(10,2) NOT NULL,
+  `concepto` VARCHAR(45) NOT NULL,
+  `id_usuario` INT NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE)
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
+  INDEX `id_usuario_idx` (`id_usuario` ASC) VISIBLE,
+  CONSTRAINT `id_usuario`
+    FOREIGN KEY (`id_usuario`)
+    REFERENCES `community`.`usuarios` (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci;
@@ -230,3 +237,4 @@ COLLATE = latin1_spanish_ci;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
