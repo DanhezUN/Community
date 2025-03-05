@@ -48,8 +48,10 @@ CREATE TABLE IF NOT EXISTS `community`.`usuarios` (
   `username` VARCHAR(45) NOT NULL,
   `tipo` ENUM('residente', 'vigilante', 'admin', 'otro') NOT NULL DEFAULT 'otro',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE)
+  UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE)
 ENGINE = InnoDB
+AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci
 COMMENT = 'Usuarios Conjunto';
@@ -88,10 +90,26 @@ DROP TABLE IF EXISTS `community`.`areas_comunes` ;
 CREATE TABLE IF NOT EXISTS `community`.`areas_comunes` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `nombre` VARCHAR(255) NOT NULL,
-  `estado` BOOL NOT NULL DEFAULT FALSE,
+  `estado` TINYINT(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
   UNIQUE INDEX `UQ_nombre` (`nombre` ASC) VISIBLE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 3
+DEFAULT CHARACTER SET = latin1
+COLLATE = latin1_spanish_ci;
+
+
+-- -----------------------------------------------------
+-- Table `community`.`auditoria`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `community`.`auditoria` ;
+
+CREATE TABLE IF NOT EXISTS `community`.`auditoria` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `registro` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci;
@@ -185,6 +203,7 @@ CREATE TABLE IF NOT EXISTS `community`.`reservas` (
     FOREIGN KEY (`id_usuario`)
     REFERENCES `community`.`usuarios` (`id`))
 ENGINE = InnoDB
+AUTO_INCREMENT = 3
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci;
 
@@ -233,16 +252,46 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci;
 
+USE `community` ;
 
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+-- -----------------------------------------------------
+-- procedure add_residente
+-- -----------------------------------------------------
 
-DROP TRIGGER IF EXISTS `community`.`reservas_AFTER_INSERT`;
+USE `community`;
+DROP procedure IF EXISTS `community`.`add_residente`;
 
 DELIMITER $$
 USE `community`$$
-CREATE DEFINER = CURRENT_USER TRIGGER `community`.`reservas_AFTER_INSERT` AFTER INSERT ON `reservas` FOR EACH ROW
+CREATE DEFINER=`root`@`localhost` PROCEDURE `add_residente`(in username varchar(45), in numtorre varchar(4), in numapto varchar(4))
+BEGIN
+	declare aptoid int;
+    declare torreid int;
+    declare userid int;
+    
+    select id into userid from community.usuarios where username = username;
+    select id into torreid from community.torres where numero = numtorre;
+    select id into aptoid from community.apartamentos where (numero = numapto and id_torre = torreid);
+    if (select tipo from community.usuarios where id = userid) = ('residente' or 'admin')  then
+		insert into community.residentes values (aptoid, userid);
+	else
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuario no valido como residente';
+	end if;
+END$$
+
+DELIMITER ;
+USE `community`;
+
+DELIMITER $$
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`reservas_AFTER_INSERT` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`reservas_AFTER_INSERT`
+AFTER INSERT ON `community`.`reservas`
+FOR EACH ROW
 BEGIN
     if (SELECT estado FROM  `community`.`areas_comunes` where (id = new.id_area)) = FALSE then
 		UPDATE areas_comunes set estado=TRUE where id = new.id_area;
@@ -250,5 +299,10 @@ BEGIN
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Area Ya en reserva Activa';
 	end if;
 END$$
+
+
 DELIMITER ;
 
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
