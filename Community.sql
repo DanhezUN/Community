@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `community`.`torres` (
   UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
   UNIQUE INDEX `UQ_numero` (`numero` ASC) VISIBLE)
 ENGINE = InnoDB
+AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci;
 
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `community`.`usuarios` (
   UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
   UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 3
+AUTO_INCREMENT = 7
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci
 COMMENT = 'Usuarios Conjunto';
@@ -78,6 +79,7 @@ CREATE TABLE IF NOT EXISTS `community`.`apartamentos` (
     FOREIGN KEY (`id_propietario`)
     REFERENCES `community`.`usuarios` (`id`))
 ENGINE = InnoDB
+AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci;
 
@@ -112,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `community`.`auditoria` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 4
+AUTO_INCREMENT = 12
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci;
 
@@ -275,7 +277,7 @@ BEGIN
     select id into torreid from community.torres where numero = numtorre;
     select id into aptoid from community.apartamentos where (numero = numapto and id_torre = torreid);
     if (select tipo from community.usuarios where id = userid) = ('residente' or 'admin')  then
-		insert into community.residentes values (aptoid, userid);
+		insert into community.residentes (id_apartamento, id_usuario) values (aptoid, userid);
 	else
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuario no valido como residente';
 	end if;
@@ -660,4 +662,3 @@ DELIMITER ;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
