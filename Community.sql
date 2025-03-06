@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `community`.`usuarios` (
   UNIQUE INDEX `UQ_id` (`id` ASC) VISIBLE,
   UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 3
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci
 COMMENT = 'Usuarios Conjunto';
@@ -107,10 +107,12 @@ DROP TABLE IF EXISTS `community`.`auditoria` ;
 
 CREATE TABLE IF NOT EXISTS `community`.`auditoria` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `fecha` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `registro` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE)
 ENGINE = InnoDB
+AUTO_INCREMENT = 4
 DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_spanish_ci;
 
@@ -285,6 +287,255 @@ USE `community`;
 DELIMITER $$
 
 USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`usuarios_AFTER_DELETE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`usuarios_AFTER_DELETE`
+AFTER DELETE ON `community`.`usuarios`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Usuario ", old.username, " Eliminado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`usuarios_AFTER_INSERT` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`usuarios_AFTER_INSERT`
+AFTER INSERT ON `community`.`usuarios`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Usuario ", new.username, " Registrado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`usuarios_AFTER_UPDATE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`usuarios_AFTER_UPDATE`
+AFTER UPDATE ON `community`.`usuarios`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Usuario ", new.username, " Actualizado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`apartamentos_AFTER_DELETE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`apartamentos_AFTER_DELETE`
+AFTER DELETE ON `community`.`apartamentos`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Apartamento ", old.numero, " Eliminado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`apartamentos_AFTER_INSERT` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`apartamentos_AFTER_INSERT`
+AFTER INSERT ON `community`.`apartamentos`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Apartamento ", new.numero, " Registrado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`apartamentos_AFTER_UPDATE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`apartamentos_AFTER_UPDATE`
+AFTER UPDATE ON `community`.`apartamentos`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Apartamento ", new.numero, " Actualizado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`areas_comunes_AFTER_DELETE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`areas_comunes_AFTER_DELETE`
+AFTER DELETE ON `community`.`areas_comunes`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Area Común ", old.nombre, " Eliminada"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`areas_comunes_AFTER_INSERT` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`areas_comunes_AFTER_INSERT`
+AFTER INSERT ON `community`.`areas_comunes`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Area Común ", new.nombre, " Registrada"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`areas_comunes_AFTER_UPDATE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`areas_comunes_AFTER_UPDATE`
+AFTER UPDATE ON `community`.`areas_comunes`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Area Común ", new.nombre, " Actualizada"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`mascotas_AFTER_DELETE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`mascotas_AFTER_DELETE`
+AFTER DELETE ON `community`.`mascotas`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Mascota ", old.nombre, " Eliminada"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`mascotas_AFTER_INSERT` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`mascotas_AFTER_INSERT`
+AFTER INSERT ON `community`.`mascotas`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Mascota ", new.nombre, " Registrada"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`mascotas_AFTER_UPDATE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`mascotas_AFTER_UPDATE`
+AFTER UPDATE ON `community`.`mascotas`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Mascota ", new.nombre, " Actualizada"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`pagos_AFTER_DELETE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`pagos_AFTER_DELETE`
+AFTER DELETE ON `community`.`pagos`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Pago por", old.concepto, " con ID_Usuario: ", old.id_usuario, " Eliminado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`pagos_AFTER_INSERT` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`pagos_AFTER_INSERT`
+AFTER INSERT ON `community`.`pagos`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Pago por", new.concepto, " con ID_Usuario: ", new.id_usuario, " Registrado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`pagos_AFTER_UPDATE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`pagos_AFTER_UPDATE`
+AFTER UPDATE ON `community`.`pagos`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Pago por", new.concepto, " con ID_Usuario: ", new.id_usuario, " Actualizado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`pqr_AFTER_DELETE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`pqr_AFTER_DELETE`
+AFTER DELETE ON `community`.`pqr`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("PQR ", old.asunto, " Eliminado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`pqr_AFTER_INSERT` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`pqr_AFTER_INSERT`
+AFTER INSERT ON `community`.`pqr`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("PQR ", new.asunto, " Registrado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`pqr_AFTER_UPDATE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`pqr_AFTER_UPDATE`
+AFTER UPDATE ON `community`.`pqr`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("PQR ", new.asunto, " Actualizado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`reservas_AFTER_DELETE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`reservas_AFTER_DELETE`
+AFTER DELETE ON `community`.`reservas`
+FOR EACH ROW
+BEGIN
+	declare area varchar(255);
+    select nombre into area from community.areas_comunes where id = old.id_area;
+	insert into community.auditoria (registro) values (concat("Reserva ", area, " Eliminada"));
+END$$
+
+
+USE `community`$$
 DROP TRIGGER IF EXISTS `community`.`reservas_AFTER_INSERT` $$
 USE `community`$$
 CREATE
@@ -293,11 +544,114 @@ TRIGGER `community`.`reservas_AFTER_INSERT`
 AFTER INSERT ON `community`.`reservas`
 FOR EACH ROW
 BEGIN
-    if (SELECT estado FROM  `community`.`areas_comunes` where (id = new.id_area)) = FALSE then
+  declare area varchar(255);
+  if (SELECT estado FROM  `community`.`areas_comunes` where (id = new.id_area)) = FALSE then
 		UPDATE areas_comunes set estado=TRUE where id = new.id_area;
+
+		select nombre into area from community.areas_comunes where id = new.id_area;
+		insert into community.auditoria (registro) values (concat("Reserva ", area, " Registrada"));
 	else
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Area Ya en reserva Activa';
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Area ya en reserva Activa';
 	end if;
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`reservas_AFTER_UPDATE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`reservas_AFTER_UPDATE`
+AFTER UPDATE ON `community`.`reservas`
+FOR EACH ROW
+BEGIN
+	declare area varchar(255);
+    select nombre into area from community.areas_comunes where id = new.id_area;
+	insert into community.auditoria (registro) values (concat("Reserva ", area, " Actualizada"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`residentes_AFTER_DELETE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`residentes_AFTER_DELETE`
+AFTER DELETE ON `community`.`residentes`
+FOR EACH ROW
+BEGIN
+	declare usuario varchar(100);
+    select nombre into usuario from community.usuarios where id = old.id_usuario;
+	insert into community.auditoria (registro) values (concat("Usuario ", usuario, " Eliminado como Residente"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`residentes_AFTER_INSERT` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`residentes_AFTER_INSERT`
+AFTER INSERT ON `community`.`residentes`
+FOR EACH ROW
+BEGIN
+	declare usuario varchar(100);
+    select nombre into usuario from community.usuarios where id = new.id_usuario;
+	insert into community.auditoria (registro) values (concat("Usuario ", usuario, " Registrado como Residente"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`residentes_AFTER_UPDATE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`residentes_AFTER_UPDATE`
+AFTER UPDATE ON `community`.`residentes`
+FOR EACH ROW
+BEGIN
+	declare usuario varchar(100);
+    select nombre into usuario from community.usuarios where id = new.id_usuario;
+	insert into community.auditoria (registro) values (concat("Usuario ", usuario, " Actualizado como Residente"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`visitantes_AFTER_DELETE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`visitantes_AFTER_DELETE`
+AFTER DELETE ON `community`.`visitantes`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Visitante ", old.nombre, " Eliminado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`visitantes_AFTER_INSERT` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`visitantes_AFTER_INSERT`
+AFTER INSERT ON `community`.`visitantes`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Visitante ", new.nombre, " Registrado"));
+END$$
+
+
+USE `community`$$
+DROP TRIGGER IF EXISTS `community`.`visitantes_AFTER_UPDATE` $$
+USE `community`$$
+CREATE
+DEFINER=`root`@`localhost`
+TRIGGER `community`.`visitantes_AFTER_UPDATE`
+AFTER UPDATE ON `community`.`visitantes`
+FOR EACH ROW
+BEGIN
+	insert into community.auditoria (registro) values (concat("Visitante ", new.nombre, " Actualizado"));
 END$$
 
 
@@ -306,3 +660,4 @@ DELIMITER ;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
